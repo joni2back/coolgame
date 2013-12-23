@@ -1,27 +1,25 @@
-_STAR_WIDTH = 35;
-_STAR_HEIGHT = 35;
-_STAR_COUNTER = 0;
-
 function CoolGame() {
-    this.fps = 60;
+    this.fps = 100;
     this.canvas = null;
     this.width = 0;
-    this.width = 0;
+    this.height = 0;
     this.minVelocity = 200;
     this.maxVelocity = 3000;
     this.stars = 25;
     this.intervalId = 0;
+    this.clickedStars = 0;
+    this.audio = new Audio('click.ogg');
 }
 
 function Star(x, y, width, height, velocity, image) {
     this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.velocity = 44;
-    this.color = '#fff';
+    this.y = y || -48;
+    this.width = width || 48;
+    this.height = height || 48;
+    this.velocity = velocity || 100;
     this.image = new Image();
     this.image.src = "ball.png";
+    this.alive = true;
 }
 
 //The main function - initialises the coolGame.
@@ -39,7 +37,7 @@ CoolGame.prototype.initialise = function (div) {
         self.canvas.width = self.width;
         self.canvas.height = self.height;
         self.draw();
-    }
+    };
 
     //Create the canvas.
     var canvas = document.createElement('canvas');
@@ -54,7 +52,7 @@ CoolGame.prototype.start = function () {
     //Create the stars.
     var stars = [];
     for (var i = 0; i < this.stars; i++) {
-        stars[i] = new Star(Math.random() * this.width, Math.random() * this.height, _STAR_WIDTH, _STAR_HEIGHT);
+        stars[i] = new Star(Math.random() * this.width, Math.random() * this.height);
     }
     this.stars = stars;
 
@@ -78,7 +76,7 @@ CoolGame.prototype.update = function () {
         star.y += dt * star.velocity;
         //If the star has moved from the bottom of the screen, spawn it at the top.
         if (star.y > this.height) {
-            this.stars[i] = new Star(Math.random() * this.width, 0, _STAR_WIDTH, _STAR_HEIGHT);
+            this.stars[i] = new Star(Math.random() * this.width);
         }
     }
 };
@@ -103,21 +101,32 @@ CoolGame.prototype.draw = function () {
     }
 };
 
+CoolGame.prototype.starClick = function (star) {
+    if (star.alive) {
+        star.alive = false;
+        star.image = newImg;
+        this.audio.play();
+        this.clickedStars++;
+    }
+};
+
 CoolGame.prototype.click = function (x, y) {
     newImg = new Image();
     newImg.src="ball_over.png";
+
     for (var i = 0; i < this.stars.length; i++) {
         var left = this.stars[i].x;
         var right = this.stars[i].x + this.stars[i].width;
         var top = this.stars[i].y;
         var bottom = this.stars[i].y + this.stars[i].height;
         if (right >= x && left <= x && bottom >= y && top <= y) {
-            this.stars[i].image = newImg;
-            _STAR_COUNTER++;
+            this.starClick(this.stars[i]);
             return true;
         }
     }
 };
+
+
 
 var coolGame = new CoolGame();
 

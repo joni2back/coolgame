@@ -1,24 +1,34 @@
+/**
+ * @author Jonas Sciangula Street <joni2back@gmail.com>
+ */
+
+Math.fromto = function (from, to) {
+    return Math.floor(Math.random() * to) + from;
+}
+
 function CoolGame() {
-    this.fps = 100;
+    this.fps = 60;
     this.canvas = null;
     this.width = 0;
     this.height = 0;
     this.minVelocity = 200;
     this.maxVelocity = 3000;
-    this.stars = 25;
+    this.stars = 50;
     this.intervalId = 0;
     this.clickedStars = 0;
-    this.audio = new Audio('click.ogg');
+    this.audio = 'click.wav';
+    this.imgBall = 'ball.png';
+    this.imgBallOver = 'ball_over.png'
 }
 
-function Star(x, y, width, height, velocity, image) {
+function Star(x, y, width, height, velocity) {
     this.x = x;
-    this.y = y || -48;
-    this.width = width || 48;
-    this.height = height || 48;
-    this.velocity = velocity || 100;
+    this.y = y || -49;
+    this.width = width || 47;
+    this.height = height || 49;
+    this.velocity = velocity || Math.fromto(100,400);
     this.image = new Image();
-    this.image.src = "ball.png";
+    this.image.src = 'ball.png';
     this.alive = true;
 }
 
@@ -104,35 +114,39 @@ CoolGame.prototype.draw = function () {
 CoolGame.prototype.starClick = function (star) {
     if (star.alive) {
         star.alive = false;
-        star.image = newImg;
-        this.audio.play();
+        var img = new Image(this.imgBallOver);
+        var snd = new Audio(this.audio);
+        img.src = this.imgBallOver;
+
+        star.image = img; 
+        snd.play();
+        star.velocity = star.velocity * -1;
         this.clickedStars++;
     }
 };
 
-CoolGame.prototype.click = function (x, y) {
-    newImg = new Image();
-    newImg.src="ball_over.png";
-
+CoolGame.prototype.click = function (x, y, e) {
     for (var i = 0; i < this.stars.length; i++) {
         var left = this.stars[i].x;
         var right = this.stars[i].x + this.stars[i].width;
         var top = this.stars[i].y;
         var bottom = this.stars[i].y + this.stars[i].height;
         if (right >= x && left <= x && bottom >= y && top <= y) {
+            e.style.cursor = 'pointer';
             this.starClick(this.stars[i]);
             return true;
+        } else {
+            e.style.cursor = 'default';
         }
     }
 };
 
 
-
 var coolGame = new CoolGame();
 
 var container = document.getElementById('game');
-container.addEventListener('click', function (e) {
-    coolGame.click(e.offsetX, e.offsetY);
+container.addEventListener('mousemove', function (e) {
+    coolGame.click(e.offsetX, e.offsetY, container);
 }, false);
 
 

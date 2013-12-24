@@ -61,7 +61,7 @@ CoolGame.prototype.init = function (div) {
     this.canvas.height = this.height;
 };
 
-CoolGame.prototype.ballt = function () {
+CoolGame.prototype.start = function () {
     //Create the balls.
     var balls = [];
     for (var i = 0; i < this.balls; i++) {
@@ -173,5 +173,5 @@ window.onload = function() {
     }, false);
 
     coolGame.init(container);
-    coolGame.ballt();
+    coolGame.start();
 };

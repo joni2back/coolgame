@@ -19,9 +19,10 @@ var CoolGame = function() {
     this.height = 0;
     this.minVelocity = 200;
     this.maxVelocity = 3000;
-    this.balls = 25;
+    this.balls = 15;
     this.intervalId = 0;
     this.clickedBalls = 0;
+    this.background = '#ccc';
     this.audio = 'click.wav';
     this.imgBall = 'ball.png';
     this.imgBallOver = 'ball_over.png';
@@ -89,87 +90,90 @@ CoolGame.prototype.resume = function () {
 
 CoolGame.prototype.update = function () {
     var dt = 1 / this.fps;
-
-    //Walk around the previously created balls
-    for (var i = 0; i < this.balls.length; i++) {
-        var ball = this.balls[i];
+    var self = this;
+    this.walk(function(ball, i) {
+        //Generate ball vertical moviment
         ball.y += dt * ball.velocity;
+        ball.x += dt * ball.velocity;
+
         //If the ball has moved from the bottom of the screen, spawn it at the top.
-        if (ball.y > this.height) {
-            this.balls[i] = new Ball(
-                this.imgBall,
-                Math.random() * this.width
+        if (ball.y > self.height) {
+            self.balls[i] = new Ball(
+                self.imgBall,
+                Math.random() * self.width
             );
         }
-    }
+    });
 };
 
 CoolGame.prototype.draw = function () {
     var ctx = this.canvas.getContext("2d");
 
     //Draw the background.
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = this.background;
     ctx.fillRect(0, 0, this.width, this.height);
-    //ctx.fillStyle = this.balls[1].color;
 
-    for (var i = 0; i < this.balls.length; i++) {
-        var ball = this.balls[i];
-        this._drawBall(ball, ctx);
-    }
+    var self = this;
+    this.walk(function(ball) {
+        self.drawBall(ball, ctx);
+    });
 };
 
-CoolGame.prototype._drawBall = function (ball, ctx) {
-    //boxes
-    //ctx.fillStyle = ball.color;
-    //ctx.fillStyle = pattern;
+CoolGame.prototype.drawBall = function (ball, ctx) {
+    ////boxes
+    //ctx.fillStyle = '#ccc';
     //ctx.fillRect(ball.x, ball.y, ball.width, ball.height);
     //ctx.moveTo(ball.y, ball.x);
 
-    //circles
+    ////circles
     //ctx.beginPath();
     //ctx.arc(ball.x, ball.y, ball.width /2, 159, 2 * Math.PI, false);
     //ctx.fillStyle = 'red';
     //ctx.fill();
     //ctx.moveTo(ball.y, ball.x);
 
+    //images
     ctx.drawImage(ball.image, ball.x, ball.y, ball.width, ball.height);
     ctx.moveTo(ball.y, ball.x);
 };
 
-CoolGame.prototype.ballClick = function (ball) {
+CoolGame.prototype.ballTouch = function (ball) {
     if (ball.alive) {
         new Audio(this.audio).play();
         ball.alive = false;
         ball.image.src = this.imgBallOver;
         ball.velocity = ball.velocity * -1;
         this.clickedBalls++;
-
-        //Regenerate lost balls
-        //this.balls.push(new Ball(
-        //    this.imgBall,
-        //    Math.random() * this.width
-        //));
     }
 };
 
-CoolGame.prototype.click = function (x, y) {
-    for (var i = 0; i < this.balls.length; i++) {
-        var left = this.balls[i].x;
-        var right = this.balls[i].x + this.balls[i].width;
-        var top = this.balls[i].y;
-        var bottom = this.balls[i].y + this.balls[i].height;
-        if (right >= x && left <= x && bottom >= y && top <= y) {
-            this.ballClick(this.balls[i]);
-            return true;
+CoolGame.prototype.walk = function (callback) {
+    if (typeof callback === 'function') {
+        for (var i = 0; i < this.balls.length; i++) {
+            callback.apply(null, [this.balls[i], i]);
         }
     }
+};
+
+CoolGame.prototype.touch = function (x, y) {
+    var self = this;
+    this.walk(function(ball, i){
+        var left = ball.x;
+        var right = ball.x + ball.width;
+        var top = ball.y;
+        var bottom = ball.y + ball.height;
+        if (right >= x && left <= x && bottom >= y && top <= y) {
+            self.ballTouch(ball);
+            return true;
+        }
+    });
 };
 
 window.onload = function() {
     var coolGame = new CoolGame();
     var container = document.getElementById('game');
     container.addEventListener('mousemove', function (e) {
-        coolGame.click(e.offsetX, e.offsetY);
+        coolGame.touch(e.offsetX, e.offsetY);
     }, false);
 
     coolGame.init(container);

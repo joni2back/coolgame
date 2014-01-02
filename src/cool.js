@@ -29,6 +29,7 @@ var CoolGame = function() {
 };
 
 var Ball = function(image, x, y, width, height, velocity) {
+    //Review this
     this.image = Image.create(image);
     this.x = x;
     this.y = y || -49;
@@ -94,7 +95,7 @@ CoolGame.prototype.update = function () {
     this.walk(function(ball, i) {
         //Generate ball vertical moviment
         ball.y += dt * ball.velocity;
-        ball.x += dt * ball.velocity;
+        ball.x += dt * ball.velocity * 0.4;
 
         //If the ball has moved from the bottom of the screen, spawn it at the top.
         if (ball.y > self.height) {
@@ -137,13 +138,19 @@ CoolGame.prototype.drawBall = function (ball, ctx) {
     ctx.moveTo(ball.y, ball.x);
 };
 
-CoolGame.prototype.ballTouch = function (ball) {
+CoolGame.prototype.ballTouch = function (ball, i) {
     if (ball.alive) {
         new Audio(this.audio).play();
         ball.alive = false;
         ball.image.src = this.imgBallOver;
         ball.velocity = ball.velocity * -1;
         this.clickedBalls++;
+
+        //this.balls.splice(i, 1);
+        this.balls.push(new Ball(
+            this.imgBall,
+            Math.random() * self.width
+        ));
     }
 };
 
@@ -157,25 +164,14 @@ CoolGame.prototype.walk = function (callback) {
 
 CoolGame.prototype.touch = function (x, y) {
     var self = this;
-    this.walk(function(ball, i){
+    this.walk(function(ball, i) {
         var left = ball.x;
         var right = ball.x + ball.width;
         var top = ball.y;
         var bottom = ball.y + ball.height;
         if (right >= x && left <= x && bottom >= y && top <= y) {
-            self.ballTouch(ball);
+            self.ballTouch(ball, i);
             return true;
         }
     });
-};
-
-window.onload = function() {
-    var coolGame = new CoolGame();
-    var container = document.getElementById('game');
-    container.addEventListener('mousemove', function (e) {
-        coolGame.touch(e.offsetX, e.offsetY);
-    }, false);
-
-    coolGame.init(container);
-    coolGame.start();
 };

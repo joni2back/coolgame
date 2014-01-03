@@ -17,26 +17,26 @@ var CoolGame = function() {
     this.canvas = null;
     this.width = 0;
     this.height = 0;
-    this.minVelocity = 200;
-    this.maxVelocity = 3000;
+    this.minVelocity = 60;
+    this.maxVelocity = 150;
     this.balls = 15;
     this.intervalId = 0;
     this.clickedBalls = 0;
-    this.background = '#ccc';
+    this.background = '#000';
     this.audio = 'click.wav';
     this.imgBall = 'ball.png';
-    this.imgBallOver = 'ball_over.png';
+    this.imgBallOver = 'ball.png';
 };
 
 var Ball = function(image, x, y, width, height, velocity) {
-    //Review this
     this.image = Image.create(image);
+    this.width = width || 124;
+    this.height = height || 146;
     this.x = x;
-    this.y = y || -49;
-    this.width = width || 47;
-    this.height = height || 49;
-    this.velocity = velocity || Math.fromto(100,400);
+    this.y = y || -this.height;
+    this.velocity = velocity || Math.fromto(70,100);
     this.alive = true;
+    this.direction = Math.fromto(0, 3);
 };
 
 CoolGame.prototype.init = function (div) {
@@ -61,6 +61,12 @@ CoolGame.prototype.init = function (div) {
     this.canvas = canvas;
     this.canvas.width = this.width;
     this.canvas.height = this.height;
+
+    canvas.addEventListener('mousemove', function (e) {
+        xpos = (typeof e.offsetX == 'undefined') ? e.layerX : e.offsetX;
+        ypos = (typeof e.offsetY == 'undefined') ? e.layerY : e.offsetY;
+        self.touch(xpos, ypos);
+    }, false);
 };
 
 CoolGame.prototype.start = function () {
@@ -70,7 +76,9 @@ CoolGame.prototype.start = function () {
         balls[i] = new Ball(
             this.imgBall,
             Math.random() * this.width,
-            Math.random() * this.height
+            Math.random() * this.height,
+            null, null,
+            Math.fromto(this.minVelocity, this.maxVelocity)
         );
     }
     this.balls = balls;
@@ -95,13 +103,18 @@ CoolGame.prototype.update = function () {
     this.walk(function(ball, i) {
         //Generate ball vertical moviment
         ball.y += dt * ball.velocity;
-        ball.x += dt * ball.velocity * 0.4;
+
+        ball.direction ?
+            ball.x += dt * ball.velocity * -0.2:
+            ball.x += dt * ball.velocity * 0.2;
 
         //If the ball has moved from the bottom of the screen, spawn it at the top.
         if (ball.y > self.height) {
             self.balls[i] = new Ball(
                 self.imgBall,
-                Math.random() * self.width
+                Math.random() * self.width,
+                null, null, null,
+                Math.fromto(self.minVelocity, self.maxVelocity)
             );
         }
     });
@@ -149,7 +162,9 @@ CoolGame.prototype.ballTouch = function (ball, i) {
         //this.balls.splice(i, 1);
         this.balls.push(new Ball(
             this.imgBall,
-            Math.random() * self.width
+            Math.random() * self.width,
+            null, null, null,
+            Math.fromto(this.minVelocity, this.maxVelocity)
         ));
     }
 };

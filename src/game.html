@@ -31,10 +31,6 @@
 window.onload = function() {
     var container = document.getElementById('game');
     var coolGame = new CoolGame();
-    container.addEventListener('mousemove', function (e) {
-        coolGame.touch(e.offsetX, e.offsetY);
-    }, false);
-
     coolGame.init(container);
     coolGame.start();
 };
